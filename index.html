@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sponge Pop</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <section id="entry" class="entry">
+      <h1>Sponge Pop</h1>
+      <form id="join">
+        <label for="name">닉네임을 입력해주세요</label>
+        <input id="name" required maxlength="24" autocomplete="off">
+        <button class="primary">open</button>
+      </form>
+    </section>
+
+    <div id="app" hidden>
+      <header>
+        <button class="back" id="latest" aria-label="마지막 팝으로">⌄</button>
+        <h1><button class="profile" id="profile">묵폰지</button></h1>
+        <small id="status"></small>
+        <div class="quick">
+          <button data-tab="dates" aria-label="달력">달력</button>
+          <button data-tab="search" aria-label="대화 검색">검색</button>
+        </div>
+      </header>
+
+      <!-- 수정된 프로필 바텀 시트 -->
+      <dialog id="menu" class="sheet" aria-labelledby="menu-title">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        
+        <div class="sheet-profile">
+          <div class="sheet-avatar">묵</div>
+          <h2 id="menu-title">묵폰지</h2>
+          <p class="sheet-days"><span>❤️</span> 함께한지 185일</p>
+        </div>
+
+        <div class="sheet-section">
+          <div class="sheet-section-head">
+            <span>보관함</span>
+            <button type="button" class="link-btn" data-tab="photos">전체보기</button>
+          </div>
+          <div id="recent-photos" class="recent-grid"></div>
+        </div>
+
+        <div class="sheet-section">
+          <div class="sheet-section-head">
+            <span>맞춤 설정</span>
+          </div>
+          <div class="sheet-card">
+            <button type="button" id="rename" class="sheet-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/>
+              </svg>
+              <span>애칭 설정</span>
+            </button>
+            <button type="button" id="bg-setting" class="sheet-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 5h16v6H4zM12 11v4m-2 0h4v5h-4z"/>
+              </svg>
+              <span>배경 설정</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sheet-section">
+          <div class="sheet-card">
+            <button type="button" id="exit-chat" class="sheet-item danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M15 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9"/>
+                <path d="M11 12h9m-3-3 3 3-3 3"/>
+              </svg>
+              <span>나가기</span>
+            </button>
+          </div>
+        </div>
+      </dialog>
+
+      <section id="search" hidden>
+        <h2>대화 검색</h2>
+        <button data-tab="chat">채팅으로 돌아가기</button>
+        <label for="query">메시지에 포함된 단어</label>
+        <input id="query" type="search" placeholder="예: 산책">
+        <div id="results" aria-live="polite"></div>
+      </section>
+
+      <section id="chat" aria-label="채팅 기록"></section>
+      <section id="dates" aria-label="날짜별 기록" hidden></section>
+      <section id="photos" aria-label="이미지 모아보기" hidden></section>
+
+      <footer id="composer" class="composer">
+        <span aria-disabled="true">메시지 보내기 · 읽기 전용</span>
+      </footer>
+    </div>
+  </main>
+
+  <dialog id="viewer" aria-labelledby="caption">
+    <form method="dialog">
+      <button>닫기</button>
+    </form>
+    <img id="large" alt="">
+    <p id="caption"></p>
+  </dialog>
+</body>
+</html>
