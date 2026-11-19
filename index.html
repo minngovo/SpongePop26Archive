@@ -21,15 +21,16 @@
 
     <div id="app" hidden>
       <header>
-        <button class="back" aria-label="마지막 팝으로">⌄</button>
         <h1><button class="profile" id="profile">묵폰지</button></h1>
         <small id="status"></small>
-        <div class="quick">
-          <button id="capture">캡처</button>
-          <button data-tab="hearts">하트</button>
-          <button data-tab="dates" aria-label="달력">달력</button>
-          <button data-tab="search" aria-label="대화 검색">검색</button>
+        <div class="quick quick-left">
+          <button type="button" id="capture" aria-label="채팅 캡처"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5h4m8 0h4v4m0 6v4h-4m-8 0H4v-4"/></svg></button>
+          <button type="button" data-tab="hearts" aria-label="북마크"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v16l-6-4-6 4z"/></svg></button>
         </div>
+     <div class="quick quick-right">
+          <button type="button" data-tab="dates" aria-label="달력"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4zM8 3v6m8-6v6M4 11h16"/></svg></button>
+        <button type="button" data-tab="search" aria-label="대화 검색"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 4a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm5 11.5L21 21"/></svg></button>
+         </div>
       </header>
       <button type="button" id="latest" class="latest-fab"
         aria-label="최신 채팅으로 이동" hidden>
@@ -75,12 +76,6 @@
               <input id="chat-size" type="range" min="13" max="24" value="15">
               <output id="size-value" for="chat-size">15px</output>
             </div>
-            <button type="button" id="bg-setting" class="sheet-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M4 5h16v6H4zM12 11v4m-2 0h4v5h-4z"/>
-              </svg>
-              <span>배경 설정</span>
-            </button>
           </div>
         </div>
 
@@ -98,10 +93,10 @@
       </dialog>
 
       <section id="search" hidden>
-        <h2>대화 검색</h2>
-        <button data-tab="chat">채팅으로 돌아가기</button>
-        <label for="query">메시지에 포함된 단어</label>
-        <input id="query" type="search" placeholder="예: 산책">
+        <div class="panel-top">
+          <button type="button" class="panel-back" data-tab="chat" aria-label="채팅으로 돌아가기">←</button>
+          <input id="query" type="search" aria-label="메시지 검색" placeholder="대화 검색" autocomplete="off">
+        </div>
         <div id="results" aria-live="polite"></div>
       </section>
 
@@ -114,12 +109,11 @@
     </div>
   </main>
 
-  <dialog id="viewer" aria-labelledby="caption">
+  <dialog id="viewer">
     <form method="dialog">
       <button>닫기</button>
     </form>
     <img id="large" alt="">
-    <p id="caption"></p>
   </dialog>
 </body>
 </html>

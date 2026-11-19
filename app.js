@@ -36,20 +36,18 @@ async function loadMessages() {
 }
 
 const entry=$('#entry'), app=$('#app'), nameField=$('#name'), viewer=$('#viewer');
-function tab(id){$('#capture').hidden=id!=='chat';if(id!=='chat'&&captureMode)endCapture();if(id==='hearts')renderHearts();$('#latest').hidden = id !== 'chat';for(const key of ['chat','dates','photos','search','hearts'])$('#'+key).hidden=key!==id; for(const b of document.querySelectorAll('[data-tab]'))b.setAttribute('aria-current',String(b.dataset.tab===id)); if(id==='dates')renderCalendar();if(id==='search'){showResults();$('#query').focus();}window.scrollTo(0,0);}
+function tab(id){$('#capture').hidden=id!=='chat';if(id!=='chat'&&captureMode)endCapture();if(id==='hearts')renderHearts();$('#latest').hidden = id !== 'chat';for(const key of ['chat','dates','photos','search','hearts'])$('#'+key).hidden=key!==id; for(const b of document.querySelectorAll('[data-tab]'))b.setAttribute('aria-current',String(b.dataset.tab===id)); if(id==='dates')renderCalendar();if(id==='search'){showResults();}window.scrollTo(0,0);}
 
-function picture(m){const b=node('button',null,'photo'), im=node('img');im.src=m.image;im.alt=m.alt||'채팅 이미지';b.append(im);b.onclick=()=>{const large=$('#large');large.src=m.image;large.alt=im.alt;$('#caption').textContent=dateLabel(m.date)+' · '+m.time;viewer.showModal();};return b;}
+function picture(m){const b=node('button',null,'photo'), im=node('img');im.src=m.image;im.alt=m.alt||'채팅 이미지';b.append(im);b.onclick=()=>{const large=$('#large');large.src=m.image;large.alt=im.alt;viewer.showModal();};return b;}
 
 function render(){
-  const chat=$('#chat'), photos=$('#photos'), gallery=node('div',null,'gallery-days'), recent=$('#recent-photos');
+  const chat=$('#chat'), photos=$('#photos'), gallery=node('div',null,'gallery photo-grid'), recent=$('#recent-photos');
   chat.replaceChildren();
   recent.replaceChildren();
   records.length=0;
 const duplicates=new Map();
-  const back=node('button','채팅으로 돌아가기','return');
-  back.onclick=goLatest;
-  photos.replaceChildren(node('h2','이미지 모아보기'),back,gallery);
-  if(!groups.size)chat.append(node('p','저장된 채팅이 없어요.'));
+photos.replaceChildren(panelTop(),gallery);
+   if(!groups.size)chat.append(node('p','저장된 채팅이 없어요.'));
 
   const imageMessages=[];
 
@@ -101,6 +99,7 @@ if (!fan && typeof m.replyTo === 'string' && m.replyTo.trim()) {
 }
 
       if(m.image){
+        if (!messageText && !m.replyTo) bubble.classList.add('photo-only');
         bubble.append(picture(m));
         imageMessages.push(m);
       }
@@ -108,14 +107,7 @@ if (!fan && typeof m.replyTo === 'string' && m.replyTo.trim()) {
     }
   }
 
-  for(const [date,rows] of [...groups].reverse()){
-    const images=rows.filter(m=>m.image);
-    if(!images.length)continue;
-    const day=node('section',null,'gallery-day'), grid=node('div',null,'gallery');
-    day.append(node('h3',dateLabel(date)+' · '+images.length+'장'),grid);
-    grid.append(...images.map(picture));
-    gallery.append(day);
-  }
+  for(const m of [...imageMessages].reverse()) gallery.append(picture(m));
   if(!imageMessages.length){
     gallery.append(node('p','저장된 이미지가 없어요.'));
     recent.append(node('p','저장된 이미지가 없어요.','sheet-empty'));
@@ -129,7 +121,7 @@ if (!fan && typeof m.replyTo === 'string' && m.replyTo.trim()) {
   }
 }
 
-function renderCalendar(){const area=$('#dates'), [y,m]=month.split('-').map(Number), bar=node('div',null,'month'), grid=node('div',null,'calendar');const shift=n=>{const date=new Date(Date.UTC(y,m-1+n,1));month=date.toISOString().slice(0,7);renderCalendar();$('#dates button[data-shift="'+n+'"]').focus();};const prev=node('button','이전 달'), next=node('button','다음 달');prev.dataset.shift=-1;next.dataset.shift=1;prev.onclick=()=>shift(-1);next.onclick=()=>shift(1);bar.append(prev,node('strong',`${y}년 ${m}월`),next);for(const day of '일월화수목금토')grid.append(node('span',day));for(let i=0;i<new Date(Date.UTC(y,m-1,1)).getUTCDay();i++)grid.append(node('span'));for(let i=1;i<=new Date(Date.UTC(y,m,0)).getUTCDate();i++){const date=month+'-'+String(i).padStart(2,'0'), b=node('button',i);b.disabled=!groups.has(date);if(!b.disabled)b.classList.add('has');b.setAttribute('aria-label',dateLabel(date)+(b.disabled?' 기록 없음':' 기록 보기'));b.onclick=()=>go(date);grid.append(b);}area.replaceChildren(node('h2','캘린더'),node('p','점이 있는 날짜를 누르면 해당 대화로 이동해요.'),bar,grid,returnButton());}
+function renderCalendar(){const area=$('#dates'), [y,m]=month.split('-').map(Number), bar=node('div',null,'month'), grid=node('div',null,'calendar');const shift=n=>{const date=new Date(Date.UTC(y,m-1+n,1));month=date.toISOString().slice(0,7);renderCalendar();$('#dates button[data-shift="'+n+'"]').focus();};const prev=node('button','이전 달'), next=node('button','다음 달');prev.dataset.shift=-1;next.dataset.shift=1;prev.onclick=()=>shift(-1);next.onclick=()=>shift(1);bar.append(prev,node('strong',`${y}년 ${m}월`),next);for(const day of '일월화수목금토')grid.append(node('span',day));for(let i=0;i<new Date(Date.UTC(y,m-1,1)).getUTCDay();i++)grid.append(node('span'));for(let i=1;i<=new Date(Date.UTC(y,m,0)).getUTCDate();i++){const date=month+'-'+String(i).padStart(2,'0'), b=node('button',i);b.disabled=!groups.has(date);if(!b.disabled)b.classList.add('has');b.setAttribute('aria-label',dateLabel(date)+(b.disabled?' 기록 없음':' 기록 보기'));b.onclick=()=>go(date);grid.append(b);}area.replaceChildren(panelTop(),bar,grid);}
 function start(value){nickname=value;$('#status').textContent=`함께한지 185일`;entry.hidden=true;app.hidden=false;render();tab('chat');goLatest();}
 $('#join').onsubmit = async (e) => {
   e.preventDefault();
@@ -161,7 +153,15 @@ nameField.oninput = () => nameField.setCustomValidity('');
 const menu=$('#menu');
 function go(date){tab('chat');const target=date&&document.getElementById('day-'+date);if(target){document.documentElement.style.setProperty('--offset',($('header').offsetHeight+12)+'px');target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}}
 function goLatest(){tab('chat');window.scrollTo(0,document.documentElement.scrollHeight);}
-function returnButton(){const b=node('button','마지막 팝으로','return');b.onclick=goLatest;return b;}
+function panelTop(){
+const top=node('div',null,'panel-top');
+const back=node('button','←','panel-back');
+back.type='button';
+back.setAttribute('aria-label','채팅으로 돌아가기');
+back.onclick=goLatest;
+top.append(back);
+return top;
+}
 function terms(text){return (text??'').normalize('NFKC').toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu)||[];}
 function display(m){return m.text?.replaceAll('{{name}}',()=>nickname)??'';}
 function showResults(){
@@ -234,17 +234,6 @@ menu.addEventListener('close', () => {
 
 
 $('#rename').onclick=()=>{menu.close();app.hidden=true;entry.hidden=false;nameField.value=nickname;nameField.focus();};
-
-// 배경 색상 순환 변경 (기본 블루그레이 / 라벤더 / 화이트)
-const themes=['#cbd1e7','#e5def4','#f5f6f8'];
-let themeIdx=0;
-$('#bg-setting').onclick=()=>{
-  themeIdx=(themeIdx+1)%themes.length;
-  const color=themes[themeIdx];
-  document.body.style.background=color;
-  $('main').style.background=color;
-  $('header').style.background=color;
-};
 
 // 나가기 클릭 시 초기 화면으로 이동
 $('#exit-chat').onclick=()=>{menu.close();app.hidden=true;entry.hidden=false;};
@@ -331,7 +320,7 @@ function paintHeart(r) {
 }
 function toggleHeart(r){if(hearts.has(r.key))hearts.delete(r.key);else hearts.add(r.key);paintHeart(r);try{localStorage.setItem(storeKey,JSON.stringify([...hearts]));}catch{}}
 function jump(r){tab('chat');r.wrap.scrollIntoView({block:'center'});r.wrap.animate([{outline:'3px solid #6555a7'},{outline:'0 solid transparent'}],1200);}
-function renderHearts(){const box=$('#hearts'), list=records.filter(r=>hearts.has(r.key)).reverse();box.replaceChildren(node('h2','하트 모아보기'),returnButton());if(!list.length)box.append(node('p','즐겨찾기 채팅을 모아보세요.'));for(const r of list){const row=node('div',null,'heart-row'), b=node('button',`${r.m.date} ${r.m.time} — ${display(r.m)||'사진'}`,'result'), del=node('button','♥');b.onclick=()=>jump(r);del.setAttribute('aria-label','하트 취소');del.onclick=()=>{toggleHeart(r);renderHearts();};row.append(b,del);box.append(row);}}
+function renderHearts(){const box=$('#hearts'), list=records.filter(r=>hearts.has(r.key)).reverse();box.replaceChildren(panelTop());if(!list.length)box.append(node('p','즐겨찾기 채팅을 모아보세요.'));for(const r of list){const row=node('div',null,'heart-row'), b=node('button',`${r.m.date} ${r.m.time} — ${display(r.m)||'사진'}`,'result'), del=node('button','♥');b.onclick=()=>jump(r);del.setAttribute('aria-label','하트 취소');del.onclick=()=>{toggleHeart(r);renderHearts();};row.append(b,del);box.append(row);}}
 function endCapture(){captureMode=false;first=last=null;bar.hidden=true;for(const r of records)r.wrap.classList.remove('capture-selected');}
 $('#capture').onclick=()=>{if(captureMode)return endCapture();if(!records.length)return;bar.style.top=$('header').offsetHeight+'px';captureMode=true;updateCapture();};
 function pick(r){if(first===null||last!==null){first=records.indexOf(r);last=null;}else last=records.indexOf(r);updateCapture();}
