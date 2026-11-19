@@ -11,23 +11,12 @@ let month = new Date().toISOString().slice(0, 7);
 let nickname = '';
 
 async function loadMessages() {
-  let raw;
-  const selected = archiveFile.files[0];
-  if (selected) {
-    raw = await selected.text();
-  } else {
-    if (location.protocol === 'file:') throw new Error('messages.txt를 선택한 뒤 다시 입장해 주세요.');
-    const response = await fetch('./messages.txt', { cache: 'no-cache' });
-    if (!response.ok) throw new Error(`messages.txt 요청 실패 (HTTP ${response.status}). index.html과 같은 배포 폴더에 있는지 확인해 주세요.`);
-    raw = await response.text();
+  const response = await fetch('./messages.txt', { cache: 'no-cache' });
+  if (!response.ok) {
+    throw new Error(`messages.txt를 불러오지 못했습니다 (${response.status}).`);
   }
 
-  let messages;
-  try {
-    messages = JSON.parse(raw.replace(/^\uFEFF/, ''));
-  } catch {
-    throw new Error('파일 내용이 올바른 JSON이 아니에요. messages.txt가 맞는지 확인해 주세요.');
-  }
+  const messages = JSON.parse((await response.text()).replace(/^\uFEFF/, ''));
   if (!Array.isArray(messages)) {
     throw new Error('messages.txt는 JSON 배열이어야 합니다.');
   }
@@ -47,7 +36,6 @@ async function loadMessages() {
 }
 
 const entry=$('#entry'), app=$('#app'), nameField=$('#name'), viewer=$('#viewer');
-
 function tab(id){$('#capture').hidden=id!=='chat';if(id!=='chat'&&captureMode)endCapture();if(id==='hearts')renderHearts();$('#composer').hidden=id!=='chat';for(const key of ['chat','dates','photos','search','hearts'])$('#'+key).hidden=key!==id; for(const b of document.querySelectorAll('[data-tab]'))b.setAttribute('aria-current',String(b.dataset.tab===id)); if(id==='dates')renderCalendar();if(id==='search'){showResults();$('#query').focus();}window.scrollTo(0,0);}
 
 function picture(m){const b=node('button',null,'photo'), im=node('img');im.src=m.image;im.alt=m.alt||'채팅 이미지';b.append(im);b.onclick=()=>{const large=$('#large');large.src=m.image;large.alt=im.alt;$('#caption').textContent=dateLabel(m.date)+' · '+m.time;viewer.showModal();};return b;}
@@ -55,9 +43,9 @@ function picture(m){const b=node('button',null,'photo'), im=node('img');im.src=m
 function render(){
   const chat=$('#chat'), photos=$('#photos'), gallery=node('div',null,'gallery-days'), recent=$('#recent-photos');
   chat.replaceChildren();
-  records.length=0;
-  const duplicates=new Map();
   recent.replaceChildren();
+  records.length=0;
+const duplicates=new Map();
   const back=node('button','채팅으로 돌아가기','return');
   back.onclick=goLatest;
   photos.replaceChildren(node('h2','이미지 모아보기'),back,gallery);
@@ -113,7 +101,7 @@ if (!fan && typeof m.replyTo === 'string' && m.replyTo.trim()) {
         bubble.append(picture(m));
         imageMessages.push(m);
       }
-      stack.append(decorate(bubble,m,author,duplicates));
+     stack.append(decorate(bubble,m,author,duplicates));
     }
   }
 
@@ -140,14 +128,6 @@ if (!fan && typeof m.replyTo === 'string' && m.replyTo.trim()) {
 
 function renderCalendar(){const area=$('#dates'), [y,m]=month.split('-').map(Number), bar=node('div',null,'month'), grid=node('div',null,'calendar');const shift=n=>{const date=new Date(Date.UTC(y,m-1+n,1));month=date.toISOString().slice(0,7);renderCalendar();$('#dates button[data-shift="'+n+'"]').focus();};const prev=node('button','이전 달'), next=node('button','다음 달');prev.dataset.shift=-1;next.dataset.shift=1;prev.onclick=()=>shift(-1);next.onclick=()=>shift(1);bar.append(prev,node('strong',`${y}년 ${m}월`),next);for(const day of '일월화수목금토')grid.append(node('span',day));for(let i=0;i<new Date(Date.UTC(y,m-1,1)).getUTCDay();i++)grid.append(node('span'));for(let i=1;i<=new Date(Date.UTC(y,m,0)).getUTCDate();i++){const date=month+'-'+String(i).padStart(2,'0'), b=node('button',i);b.disabled=!groups.has(date);if(!b.disabled)b.classList.add('has');b.setAttribute('aria-label',dateLabel(date)+(b.disabled?' 기록 없음':' 기록 보기'));b.onclick=()=>go(date);grid.append(b);}area.replaceChildren(node('h2','캘린더'),node('p','점이 있는 날짜를 누르면 해당 대화로 이동해요.'),bar,grid,returnButton());}
 function start(value){nickname=value;$('#status').textContent=`함께한지 185일`;entry.hidden=true;app.hidden=false;render();tab('chat');goLatest();}
-const fileLabel = node('label', '채팅 기록 파일 선택 (messages.txt)');
-const archiveFile = node('input');
-archiveFile.type = 'file';
-archiveFile.accept = '.txt,.json';
-fileLabel.append(archiveFile);
-fileLabel.hidden = location.protocol !== 'file:';
-nameField.after(fileLabel);
-
 $('#join').onsubmit = async (e) => {
   e.preventDefault();
   const value = nameField.value.trim();
@@ -165,8 +145,7 @@ $('#join').onsubmit = async (e) => {
     await loadMessages();
   } catch (error) {
     console.error(error);
-    fileLabel.hidden = false;
-    alert(error.message || '채팅 기록을 불러오지 못했어요.');
+    alert('채팅 기록을 불러오지 못했어요. messages.txt의 위치와 형식을 확인해 주세요.');
     return;
   } finally {
     button.disabled = false;
@@ -236,7 +215,7 @@ function toggleHeart(r){if(hearts.has(r.key))hearts.delete(r.key);else hearts.ad
 function jump(r){tab('chat');r.wrap.scrollIntoView({block:'center'});r.wrap.animate([{outline:'3px solid #6555a7'},{outline:'0 solid transparent'}],1200);}
 function renderHearts(){const box=$('#hearts'), list=records.filter(r=>hearts.has(r.key)).reverse();box.replaceChildren(node('h2','하트 모아보기'),returnButton());if(!list.length)box.append(node('p','말풍선을 더블클릭하거나 ♡를 눌러 채팅을 모아보세요.'));for(const r of list){const row=node('div',null,'heart-row'), b=node('button',`${r.m.date} ${r.m.time} — ${display(r.m)||'사진'}`,'result'), del=node('button','♥');b.onclick=()=>jump(r);del.setAttribute('aria-label','하트 취소');del.onclick=()=>{toggleHeart(r);renderHearts();};row.append(b,del);box.append(row);}}
 function endCapture(){captureMode=false;first=last=null;bar.hidden=true;for(const r of records)r.wrap.classList.remove('capture-selected');}
-$('#capture').onclick=()=>{if(captureMode)return endCapture();if(!records.length)return;captureMode=true;updateCapture();};
+$('#capture').onclick=()=>{if(captureMode)return endCapture();if(!records.length)return;bar.style.top=$('header').offsetHeight+'px';captureMode=true;updateCapture();};
 function pick(r){if(first===null||last!==null){first=records.indexOf(r);last=null;}else last=records.indexOf(r);updateCapture();}
 function updateCapture(){const low=Math.min(first,last??first),high=Math.max(first,last??first);records.forEach((r,i)=>r.wrap.classList.toggle('capture-selected',first!==null&&i>=low&&i<=high));const save=node('button','PNG 저장'),stop=node('button','취소');save.disabled=last===null;stop.onclick=endCapture;save.onclick=async()=>{save.disabled=true;try{await exportCapture(records.slice(low,high+1));}catch(e){alert(e.message);}finally{save.disabled=false;}};bar.replaceChildren(node('span',first===null?'시작 메시지를 선택하세요.':last===null?'끝 메시지를 선택하세요.':'선택한 메시지 '+(high-low+1)+'개'),save,stop);bar.hidden=false;}
 async function exportCapture(rows){
