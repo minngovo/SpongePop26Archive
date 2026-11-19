@@ -24,6 +24,8 @@
         <h1><button class="profile" id="profile">묵폰지</button></h1>
         <small id="status"></small>
         <div class="quick">
+          <button id="capture">캡처</button>
+          <button data-tab="hearts">하트</button>
           <button data-tab="dates" aria-label="달력">달력</button>
           <button data-tab="search" aria-label="대화 검색">검색</button>
         </div>
@@ -89,6 +91,8 @@
         <div id="results" aria-live="polite"></div>
       </section>
 
+      <section id="hearts" hidden></section>
+      <div id="capture-bar" hidden></div>
       <section id="chat" aria-label="채팅 기록"></section>
       <section id="dates" aria-label="날짜별 기록" hidden></section>
       <section id="photos" aria-label="이미지 모아보기" hidden></section>
