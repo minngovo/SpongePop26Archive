@@ -71,7 +71,10 @@ const duplicates=new Map();
           const badge=node('span','✓','verified');
           badge.setAttribute('aria-hidden','true');
           meta.append(badge);
-          line.append(node('span',author.slice(0,1),'avatar'));
+          const avatar=node('img',null,'avatar');
+          avatar.src='./images/artist-profile.jpg';
+          avatar.alt='';
+          line.append(avatar);
         }
         meta.append(t);
         stack.append(meta);
@@ -166,7 +169,11 @@ function showResults(){
  if(!query.length){out.append(node('p','검색어를 입력해 주세요.'));return;}
  for(const r of records){const text=display(r.m), words=terms(text+' '+(r.m.replyTo??''));
  if(!query.every(q=>words.some(w=>w.includes(q))))continue;
- const b=node('button',`${r.m.date} ${r.m.time} — ${text||r.m.replyTo}`,'result');b.onclick=()=>jump(r);out.append(b);}
+ const b=node('button',null,'result');
+ b.append(node('span',`${r.m.date} ${r.m.time}`,'result-time'));
+ if(r.m.replyTo) b.append(node('span','팬 메시지 · '+r.m.replyTo,'result-quote'));
+ b.append(node('span',text||(r.m.image?'사진':''),'result-text'));
+ b.onclick=()=>jump(r);out.append(b);}
  if(!out.childElementCount)out.append(node('p','일치하는 메시지가 없어요.'));
 }
 
@@ -218,21 +225,50 @@ function endCapture(){captureMode=false;first=last=null;bar.hidden=true;for(cons
 $('#capture').onclick=()=>{if(captureMode)return endCapture();if(!records.length)return;bar.style.top=$('header').offsetHeight+'px';captureMode=true;updateCapture();};
 function pick(r){if(first===null||last!==null){first=records.indexOf(r);last=null;}else last=records.indexOf(r);updateCapture();}
 function updateCapture(){const low=Math.min(first,last??first),high=Math.max(first,last??first);records.forEach((r,i)=>r.wrap.classList.toggle('capture-selected',first!==null&&i>=low&&i<=high));const save=node('button','PNG 저장'),stop=node('button','취소');save.disabled=last===null;stop.onclick=endCapture;save.onclick=async()=>{save.disabled=true;try{await exportCapture(records.slice(low,high+1));}catch(e){alert(e.message);}finally{save.disabled=false;}};bar.replaceChildren(node('span',first===null?'시작 메시지를 선택하세요.':last===null?'끝 메시지를 선택하세요.':'선택한 메시지 '+(high-low+1)+'개'),save,stop);bar.hidden=false;}
+const sizeInput=$('#chat-size'), sizeKey='sponge-pop-text-size:'+location.pathname;
+function updateTextSize(value){
+ const size=Math.min(24,Math.max(13,Number(value)||15));
+ sizeInput.value=size;
+ $('#size-value').value=size+'px';
+ $('#app').style.setProperty('--chat-text-size',size+'px');
+}
+try{updateTextSize(localStorage.getItem(sizeKey)||sizeInput.value);}catch{updateTextSize(sizeInput.value);}
+sizeInput.oninput=()=>{
+ updateTextSize(sizeInput.value);
+ try{localStorage.setItem(sizeKey,sizeInput.value);}catch{}
+};
+
 async function exportCapture(rows){
- const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),width=660;
- function lines(text,font,max){ctx.font=font;return text.split('\n').flatMap(p=>{let line='',out=[];for(const char of p){if(line&&ctx.measureText(line+char).width>max){out.push(line);line='';}line+=char;}return [...out,line];});}
- let y=24;const cleanups=[],paint=[];let day='';
- try{for(const {m,author} of rows){
-  if(day!==m.date){day=m.date;const at=y;paint.push(()=>{ctx.fillStyle='#434663';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText(dateLabel(m.date),width/2,at+16);ctx.textAlign='left';});y+=34;}
-  const fan=m.from==='fan',x=fan?190:24,at=y,text=lines(display(m),'18px sans-serif',414), quote=m.replyTo?lines(m.replyTo,'14px sans-serif',414):[];
-  let photo=null,w=0,h=0;
-  if(m.image){try{const res=await fetch(m.image);if(!res.ok)throw Error();photo=await createImageBitmap(await res.blob());cleanups.push(photo);w=Math.min(414,photo.width,320*photo.width/photo.height);h=w*photo.height/photo.width;}catch{if(location.protocol==='file:'&&!m.image.startsWith('data:')){photo=new Image();photo.src=m.image;try{await photo.decode();w=Math.min(414,photo.naturalWidth,320*photo.naturalWidth/photo.naturalHeight);h=w*photo.naturalHeight/photo.naturalWidth;}catch{throw Error('사진을 불러오지 못했어요: '+m.image);}}else throw Error('사진을 불러오지 못했어요: '+m.image);}}
-  const body=(quote.length?26+quote.length*19:0)+(m.text?text.length*25:0)+h+24;
-  paint.push(()=>{ctx.fillStyle='#30354d';ctx.font='14px sans-serif';ctx.fillText(author+' · '+m.time,x,at+16);ctx.fillStyle=fan?'#6467bf':'#fff';ctx.beginPath();ctx.roundRect(x,at+24,446,body,15);ctx.fill();let t=at+45;if(quote.length){ctx.fillStyle='#555';ctx.font='14px sans-serif';ctx.fillText(author+'님의 답장',x+16,t);t+=20;for(const q of quote){ctx.fillText(q,x+16,t);t+=19;}t+=6;}ctx.fillStyle=fan?'#fff':'#171a2a';ctx.font='18px sans-serif';if(m.text)for(const l of text){ctx.fillText(l,x+16,t);t+=25;}if(photo)ctx.drawImage(photo,x+16,t-10,w,h);});
-  y+=body+36;if(y>8000)throw Error('선택한 범위가 너무 길어요. 나눠서 캡처해 주세요.');
+ if(typeof window.html2canvas!=='function') throw Error('캡처 모듈을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.');
+ const chat=$('#chat'), start=rows[0].wrap, end=rows.at(-1).wrap;
+ const selected=new Set(rows.map(r=>r.wrap));
+ const images=[...new Set(rows.flatMap(r=>[...r.wrap.querySelectorAll('img'),r.wrap.closest('.line')?.querySelector('img.avatar')].filter(Boolean)))];
+ for(const img of images){
+  try{await img.decode();}catch{throw Error('캡처에 필요한 사진을 불러오지 못했어요. 이미지 경로를 확인해 주세요.');}
  }
- canvas.width=width;canvas.height=Math.ceil(y+12);ctx.fillStyle=getComputedStyle($('main')).backgroundColor;ctx.fillRect(0,0,width,canvas.height);paint.forEach(f=>f());
- const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw Error('이미지를 저장하지 못했어요.');
- const url=URL.createObjectURL(blob),a=node('a');a.href=url;a.download=`sponge-pop-${rows[0].m.date}-${rows[0].m.time.replace(':','')}.png`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
- }catch(e){if(e.name==='SecurityError')throw Error('로컬 사진의 캡처가 브라우저에서 제한됐어요. 배포된 페이지에서 다시 시도해 주세요.');throw e;}finally{for(const bitmap of cleanups)bitmap.close();}
+ await document.fonts.ready;
+ const bounds=chat.getBoundingClientRect(), firstBounds=start.getBoundingClientRect();
+ const preceding=start.previousElementSibling;
+ const top=preceding?.classList.contains('meta')?Math.min(firstBounds.top,start.closest('.line').getBoundingClientRect().top):firstBounds.top;
+ const y=Math.max(0,Math.floor(top-bounds.top)-2);
+ const height=Math.ceil(end.getBoundingClientRect().bottom-bounds.top)-y+2;
+ const width=Math.ceil(bounds.width);
+ if(height>8000)throw Error('선택한 범위가 너무 길어요. 나눠서 캡처해 주세요.');
+ const keep=Array.from(chat.querySelectorAll('.message-item'),el=>selected.has(el));
+ const canvas=await window.html2canvas(chat,{
+  y,width,height,scale:Math.min(window.devicePixelRatio||1,2),
+  backgroundColor:getComputedStyle($('main')).backgroundColor,
+  useCORS:true,logging:false,
+  onclone(doc){
+   doc.querySelectorAll('#chat .message-item').forEach((el,i)=>{
+    el.classList.remove('capture-selected');
+    if(!keep[i])el.style.visibility='hidden';
+   });
+  }
+ });
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+ if(!blob)throw Error('이미지를 저장하지 못했어요.');
+ const url=URL.createObjectURL(blob), a=node('a');
+ a.href=url;a.download=`sponge-pop-${rows[0].m.date}-${rows[0].m.time.replace(':','')}.png`;
+ document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
 }

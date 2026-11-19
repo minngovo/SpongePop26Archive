@@ -653,3 +653,14 @@ dialog.sheet::backdrop {
 
 .message-item{display:flex;align-items:center;gap:5px;max-width:100%;border-radius:18px}.mine .message-item{flex-direction:row-reverse}.heart-toggle{border:0;background:transparent;color:#a32f62;font-size:17px;padding:4px;flex:none;cursor:pointer}.heart-toggle[aria-pressed=true]{color:#bb2262}.capture-selected{outline:2px solid #5548a1;background:#ffffff67}.message-item.capture-selected{cursor:pointer}#capture-bar:not([hidden]){display:flex;position:sticky;top:var(--offset,86px);z-index:4;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;padding:10px 16px;border-bottom:1px solid #c7c3df}#hearts{padding:16px}.heart-row{display:flex;align-items:center;gap:8px}.heart-row .result{flex:1}.heart-row>button:last-child{color:#a32f62}
 
+
+#chat .bubble,#results .result,#hearts .result{font-size:var(--chat-text-size,15px)}
+img.avatar,.sheet-avatar img{object-fit:cover;display:block;padding:0}
+.sheet-avatar{overflow:hidden}
+.text-setting{gap:10px;cursor:default}
+.text-setting label,.text-setting output{flex:none}
+.text-setting input{flex:1;min-width:0;width:100%;padding:0}
+#results .result span{display:block;overflow-wrap:anywhere}
+.result-time{font-size:.8em;opacity:.8}
+.result-quote{margin:5px 0;padding-left:8px;border-left:2px solid currentColor;font-size:.88em}
+.result-text{margin-top:4px;white-space:pre-wrap}

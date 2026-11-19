@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sponge Pop</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -36,7 +37,7 @@
         <div class="sheet-handle" aria-hidden="true"></div>
         
         <div class="sheet-profile">
-          <div class="sheet-avatar">묵</div>
+          <div class="sheet-avatar"><img src="images/artist-profile.jpg" alt="묵폰지 프로필"></div>
           <h2 id="menu-title">묵폰지</h2>
           <p class="sheet-days"><span>❤️</span> 함께한지 185일</p>
         </div>
@@ -61,6 +62,11 @@
               </svg>
               <span>애칭 설정</span>
             </button>
+            <div class="sheet-item text-setting">
+              <label for="chat-size">글자 크기</label>
+              <input id="chat-size" type="range" min="13" max="24" value="15">
+              <output id="size-value" for="chat-size">15px</output>
+            </div>
             <button type="button" id="bg-setting" class="sheet-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <path d="M4 5h16v6H4zM12 11v4m-2 0h4v5h-4z"/>
