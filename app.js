@@ -36,7 +36,7 @@ async function loadMessages() {
 }
 
 const entry=$('#entry'), app=$('#app'), nameField=$('#name'), viewer=$('#viewer');
-function tab(id){$('#capture').hidden=id!=='chat';if(id!=='chat'&&captureMode)endCapture();if(id==='hearts')renderHearts();$('#composer').hidden=id!=='chat';for(const key of ['chat','dates','photos','search','hearts'])$('#'+key).hidden=key!==id; for(const b of document.querySelectorAll('[data-tab]'))b.setAttribute('aria-current',String(b.dataset.tab===id)); if(id==='dates')renderCalendar();if(id==='search'){showResults();$('#query').focus();}window.scrollTo(0,0);}
+function tab(id){$('#capture').hidden=id!=='chat';if(id!=='chat'&&captureMode)endCapture();if(id==='hearts')renderHearts();$('#latest').hidden = id !== 'chat';for(const key of ['chat','dates','photos','search','hearts'])$('#'+key).hidden=key!==id; for(const b of document.querySelectorAll('[data-tab]'))b.setAttribute('aria-current',String(b.dataset.tab===id)); if(id==='dates')renderCalendar();if(id==='search'){showResults();$('#query').focus();}window.scrollTo(0,0);}
 
 function picture(m){const b=node('button',null,'photo'), im=node('img');im.src=m.image;im.alt=m.alt||'채팅 이미지';b.append(im);b.onclick=()=>{const large=$('#large');large.src=m.image;large.alt=im.alt;$('#caption').textContent=dateLabel(m.date)+' · '+m.time;viewer.showModal();};return b;}
 
@@ -183,6 +183,55 @@ $('#profile').onclick=()=>menu.showModal();
 
 // 시트 바깥의 어두운 배경 클릭 시 닫기
 menu.onclick=e=>{if(e.target===menu)menu.close();};
+const dragZone = menu.querySelector('.sheet-drag-zone');
+let sheetDrag = null;
+let sheetClosing = false;
+
+dragZone.addEventListener('pointerdown', (e) => {
+  if (!e.isPrimary || e.button !== 0 || sheetClosing) return;
+
+  sheetDrag = { id: e.pointerId, startY: e.clientY, distance: 0 };
+  dragZone.setPointerCapture(e.pointerId);
+  menu.classList.add('is-dragging');
+});
+
+dragZone.addEventListener('pointermove', (e) => {
+  if (sheetDrag?.id !== e.pointerId) return;
+
+  sheetDrag.distance = Math.max(0, e.clientY - sheetDrag.startY);
+  menu.style.setProperty('--sheet-y', `${sheetDrag.distance}px`);
+});
+
+function finishSheetDrag(e, cancelled = false) {
+  if (sheetDrag?.id !== e.pointerId) return;
+
+  const shouldClose = !cancelled && sheetDrag.distance >= 80;
+  sheetDrag = null;
+  menu.classList.remove('is-dragging');
+
+  if (!shouldClose) {
+    menu.style.removeProperty('--sheet-y');
+    return;
+  }
+
+  sheetClosing = true;
+  menu.style.setProperty('--sheet-y', '100%');
+  setTimeout(() => {
+    if (sheetClosing && menu.open) menu.close();
+  }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 200);
+}
+
+dragZone.addEventListener('pointerup', finishSheetDrag);
+dragZone.addEventListener('pointercancel', (e) => finishSheetDrag(e, true));
+dragZone.addEventListener('lostpointercapture', (e) => finishSheetDrag(e, true));
+
+menu.addEventListener('close', () => {
+  sheetDrag = null;
+  sheetClosing = false;
+  menu.classList.remove('is-dragging');
+  menu.style.removeProperty('--sheet-y');
+});
+
 
 $('#rename').onclick=()=>{menu.close();app.hidden=true;entry.hidden=false;nameField.value=nickname;nameField.focus();};
 
@@ -207,20 +256,82 @@ let hearts=new Set();
 try {const saved=JSON.parse(localStorage.getItem(storeKey)||'[]');if(Array.isArray(saved))hearts=new Set(saved);}catch{}
 let captureMode=false, first=null, last=null;
 const bar=$('#capture-bar');
-function decorate(bubble,m,author,duplicates){
- const key=JSON.stringify([m.date,m.time,m.from,m.author,m.text,m.replyTo,m.image]);
- const n=duplicates.get(key)||0;duplicates.set(key,n+1);
- const wrap=node('div',null,'message-item'), heart=node('button',null,'heart-toggle');
- const r={m,author,key:key+'#'+n,wrap,heart};records.push(r);
- heart.type='button';heart.onclick=()=>captureMode?pick(r):toggleHeart(r);
- bubble.ondblclick=e=>{if(!captureMode&&!e.target.closest('button')){e.preventDefault();toggleHeart(r);}};
- wrap.addEventListener('click',e=>{if(captureMode&&!e.target.closest('.heart-toggle')){e.preventDefault();e.stopPropagation();pick(r);}},true);
- wrap.append(bubble,heart);paintHeart(r);return wrap;
+function decorate(bubble, m, author, duplicates) {
+  const key = JSON.stringify([m.date, m.time, m.from, m.author, m.text, m.replyTo, m.image]);
+  const n = duplicates.get(key) || 0;
+  duplicates.set(key, n + 1);
+
+  const wrap = node('div', null, 'message-item');
+  const heart = node('span', '♥', 'heart-badge');
+  const r = { m, author, key: key + '#' + n, wrap, heart };
+  records.push(r);
+
+  heart.setAttribute('aria-label', '하트한 메시지');
+  bubble.append(heart);
+
+  let lastTap = null;
+  let touchStart = null;
+  let lastTouchAt = -Infinity;
+
+  bubble.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'touch' || !e.isPrimary) return;
+    touchStart = null;
+    if (captureMode || e.target.closest('button')) {
+      lastTap = null;
+      return;
+    }
+    touchStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  });
+
+  bubble.addEventListener('pointercancel', () => {
+    touchStart = lastTap = null;
+  });
+
+  bubble.addEventListener('pointerup', (e) => {
+    if (e.pointerType !== 'touch' || touchStart?.id !== e.pointerId) return;
+    const moved = Math.hypot(e.clientX - touchStart.x, e.clientY - touchStart.y);
+    touchStart = null;
+    if (moved > 12 || captureMode) {
+      lastTap = null;
+      return;
+    }
+
+    const now = performance.now();
+    lastTouchAt = now;
+    if (lastTap && now - lastTap.time <= 320 &&
+        Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) <= 24) {
+      toggleHeart(r);
+      lastTap = null;
+    } else {
+      lastTap = { time: now, x: e.clientX, y: e.clientY };
+    }
+  });
+
+  bubble.addEventListener('dblclick', (e) => {
+    if (captureMode || e.target.closest('button') ||
+        performance.now() - lastTouchAt < 500) return;
+    e.preventDefault();
+    toggleHeart(r);
+  });
+
+  wrap.addEventListener('click', (e) => {
+    if (!captureMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    pick(r);
+  }, true);
+
+  wrap.append(bubble);
+  paintHeart(r);
+  return wrap;
 }
-function paintHeart(r){const on=hearts.has(r.key);r.heart.textContent=on?'♥':'♡';r.heart.setAttribute('aria-pressed',String(on));r.heart.setAttribute('aria-label',on?'하트 취소':'하트 추가');}
+
+function paintHeart(r) {
+  r.heart.hidden = !hearts.has(r.key);
+}
 function toggleHeart(r){if(hearts.has(r.key))hearts.delete(r.key);else hearts.add(r.key);paintHeart(r);try{localStorage.setItem(storeKey,JSON.stringify([...hearts]));}catch{}}
 function jump(r){tab('chat');r.wrap.scrollIntoView({block:'center'});r.wrap.animate([{outline:'3px solid #6555a7'},{outline:'0 solid transparent'}],1200);}
-function renderHearts(){const box=$('#hearts'), list=records.filter(r=>hearts.has(r.key)).reverse();box.replaceChildren(node('h2','하트 모아보기'),returnButton());if(!list.length)box.append(node('p','말풍선을 더블클릭하거나 ♡를 눌러 채팅을 모아보세요.'));for(const r of list){const row=node('div',null,'heart-row'), b=node('button',`${r.m.date} ${r.m.time} — ${display(r.m)||'사진'}`,'result'), del=node('button','♥');b.onclick=()=>jump(r);del.setAttribute('aria-label','하트 취소');del.onclick=()=>{toggleHeart(r);renderHearts();};row.append(b,del);box.append(row);}}
+function renderHearts(){const box=$('#hearts'), list=records.filter(r=>hearts.has(r.key)).reverse();box.replaceChildren(node('h2','하트 모아보기'),returnButton());if(!list.length)box.append(node('p','즐겨찾기 채팅을 모아보세요.'));for(const r of list){const row=node('div',null,'heart-row'), b=node('button',`${r.m.date} ${r.m.time} — ${display(r.m)||'사진'}`,'result'), del=node('button','♥');b.onclick=()=>jump(r);del.setAttribute('aria-label','하트 취소');del.onclick=()=>{toggleHeart(r);renderHearts();};row.append(b,del);box.append(row);}}
 function endCapture(){captureMode=false;first=last=null;bar.hidden=true;for(const r of records)r.wrap.classList.remove('capture-selected');}
 $('#capture').onclick=()=>{if(captureMode)return endCapture();if(!records.length)return;bar.style.top=$('header').offsetHeight+'px';captureMode=true;updateCapture();};
 function pick(r){if(first===null||last!==null){first=records.indexOf(r);last=null;}else last=records.indexOf(r);updateCapture();}

@@ -333,22 +333,6 @@ nav button[aria-current=true] {
   color: #252836;
 }
 
-.composer {
-  position: sticky;
-  bottom: 0;
-  background: #fdfdfd;
-  padding: 10px 19px 20px;
-}
-
-.composer span {
-  display: block;
-  border: 1px solid #d4d4d4;
-  background: #ededed;
-  border-radius: 99px;
-  padding: 12px 14px;
-  color: #666;
-}
-
 .verified {
   font-size: 10px;
   background: #252b35;
@@ -651,7 +635,7 @@ dialog.sheet::backdrop {
   flex: none;
 }
 
-.message-item{display:flex;align-items:center;gap:5px;max-width:100%;border-radius:18px}.mine .message-item{flex-direction:row-reverse}.heart-toggle{border:0;background:transparent;color:#a32f62;font-size:17px;padding:4px;flex:none;cursor:pointer}.heart-toggle[aria-pressed=true]{color:#bb2262}.capture-selected{outline:2px solid #5548a1;background:#ffffff67}.message-item.capture-selected{cursor:pointer}#capture-bar:not([hidden]){display:flex;position:sticky;top:var(--offset,86px);z-index:4;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;padding:10px 16px;border-bottom:1px solid #c7c3df}#hearts{padding:16px}.heart-row{display:flex;align-items:center;gap:8px}.heart-row .result{flex:1}.heart-row>button:last-child{color:#a32f62}
+.message-item{display:flex;align-items:center;gap:5px;max-width:100%;border-radius:18px}.mine .message-item{flex-direction:row-reverse}.capture-selected{outline:2px solid #5548a1;background:#ffffff67}.message-item.capture-selected{cursor:pointer}#capture-bar:not([hidden]){display:flex;position:sticky;top:var(--offset,86px);z-index:4;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;padding:10px 16px;border-bottom:1px solid #c7c3df}#hearts{padding:16px}.heart-row{display:flex;align-items:center;gap:8px}.heart-row .result{flex:1}.heart-row>button:last-child{color:#a32f62}
 
 
 #chat .bubble,#results .result,#hearts .result{font-size:var(--chat-text-size,15px)}
@@ -664,3 +648,77 @@ img.avatar,.sheet-avatar img{object-fit:cover;display:block;padding:0}
 .result-time{font-size:.8em;opacity:.8}
 .result-quote{margin:5px 0;padding-left:8px;border-left:2px solid currentColor;font-size:.88em}
 .result-text{margin-top:4px;white-space:pre-wrap}
+
+/* 바텀 시트: 손잡이 주변까지 터치 가능 */
+.sheet-drag-zone {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  margin: -12px -20px 4px;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.sheet-drag-zone .sheet-handle {
+  margin: 0;
+}
+
+dialog.sheet {
+  transform: translateY(var(--sheet-y, 0px));
+  transition: transform 180ms ease-out;
+}
+
+dialog.sheet.is-dragging {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.sheet {
+    transition: none;
+  }
+}
+
+/* 최신 채팅으로 이동: 모바일 하단 안전 영역 반영 */
+.latest-fab:not([hidden]) {
+  position: fixed;
+  z-index: 5;
+  right: max(16px, env(safe-area-inset-right, 0px),
+             calc((100vw - 740px) / 2 + 16px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #3d476b;
+  font-size: 24px;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 18%);
+}
+
+#chat {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* 하트가 설정됐을 때만 말풍선 오른쪽 아래에 표시 */
+.message-item .bubble {
+  position: relative;
+  touch-action: manipulation;
+}
+
+.heart-badge:not([hidden]) {
+  position: absolute;
+  right: 4px;
+  bottom: -5px;
+  z-index: 1;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: #fff;
+  color: #bb2262;
+  font-size: 11px;
+  line-height: 1.2;
+  pointer-events: none;
+}
+

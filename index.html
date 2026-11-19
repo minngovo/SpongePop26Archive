@@ -21,7 +21,7 @@
 
     <div id="app" hidden>
       <header>
-        <button class="back" id="latest" aria-label="마지막 팝으로">⌄</button>
+        <button class="back" aria-label="마지막 팝으로">⌄</button>
         <h1><button class="profile" id="profile">묵폰지</button></h1>
         <small id="status"></small>
         <div class="quick">
@@ -31,10 +31,18 @@
           <button data-tab="search" aria-label="대화 검색">검색</button>
         </div>
       </header>
+      <button type="button" id="latest" class="latest-fab"
+        aria-label="최신 채팅으로 이동" hidden>
+  <span aria-hidden="true">↓</span>
+</button>
+
 
       <!-- 수정된 프로필 바텀 시트 -->
       <dialog id="menu" class="sheet" aria-labelledby="menu-title">
-        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-drag-zone" aria-hidden="true">
+  <div class="sheet-handle"></div>
+</div>
+
         
         <div class="sheet-profile">
           <div class="sheet-avatar"><img src="images/artist-profile.jpg" alt="묵폰지 프로필"></div>
@@ -103,9 +111,6 @@
       <section id="dates" aria-label="날짜별 기록" hidden></section>
       <section id="photos" aria-label="이미지 모아보기" hidden></section>
 
-      <footer id="composer" class="composer">
-        <span aria-disabled="true">메시지 보내기 · 읽기 전용</span>
-      </footer>
     </div>
   </main>
 
