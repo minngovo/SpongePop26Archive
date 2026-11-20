@@ -480,15 +480,6 @@ dialog.sheet::backdrop {
   color: #11131a;
 }
 
-.sheet-days {
-  font-size: 13px;
-  color: #5a6070;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
 
 .sheet-section {
   margin-bottom: 22px;
