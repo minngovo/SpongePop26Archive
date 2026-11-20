@@ -144,7 +144,7 @@ $('#join').onsubmit = async (e) => {
   } finally {
     button.disabled = false;
   }
-
+  nameField.blur();
   start(value);
 };
 nameField.oninput = () => nameField.setCustomValidity('');
@@ -318,7 +318,11 @@ function paintHeart(r) {
   r.heart.hidden = !hearts.has(r.key);
 }
 function toggleHeart(r){if(hearts.has(r.key))hearts.delete(r.key);else hearts.add(r.key);paintHeart(r);try{localStorage.setItem(storeKey,JSON.stringify([...hearts]));}catch{}}
-function jump(r){tab('chat');r.wrap.scrollIntoView({block:'center'});r.wrap.animate([{outline:'3px solid #6555a7'},{outline:'0 solid transparent'}],1200);}
+function jump(r) {
+  tab('chat');
+  r.wrap.scrollIntoView({ block: 'center' });
+}
+
 function renderHearts(){const box=$('#hearts'), list=records.filter(r=>hearts.has(r.key)).reverse();box.replaceChildren(panelTop());if(!list.length)box.append(node('p','즐겨찾기 채팅을 모아보세요.'));for(const r of list){const row=node('div',null,'heart-row'), b=node('button',`${r.m.date} ${r.m.time} — ${display(r.m)||'사진'}`,'result'), del=node('button','♥');b.onclick=()=>jump(r);del.setAttribute('aria-label','하트 취소');del.onclick=()=>{toggleHeart(r);renderHearts();};row.append(b,del);box.append(row);}}
 function endCapture(){captureMode=false;first=last=null;bar.hidden=true;for(const r of records)r.wrap.classList.remove('capture-selected');}
 $('#capture').onclick=()=>{if(captureMode)return endCapture();if(!records.length)return;bar.style.top=$('header').offsetHeight+'px';captureMode=true;updateCapture();};
