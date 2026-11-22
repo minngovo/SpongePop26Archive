@@ -193,7 +193,7 @@ function showResults(){
  if(!query.every(q=>words.some(w=>w.includes(q))))continue;
  const b=node('button',null,'result');
  b.append(node('span',`${r.m.date} ${r.m.time}`,'result-time'));
- if(r.m.replyTo) b.append(node(r.m.replyTo,'result-quote'));
+ if(r.m.replyTo) b.append(node('span',r.m.replyTo,'result-quote'));
  b.append(node('span',text||(r.m.image?'사진':''),'result-text'));
  b.onclick=()=>jump(r);out.append(b);}
  if(!out.childElementCount)out.append(node('p','일치하는 메시지가 없어요.'));
