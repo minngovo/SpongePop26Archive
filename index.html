@@ -11,13 +11,31 @@
 <body>
   <main>
     <section id="entry" class="entry">
-      <h1>Sponge Pop</h1>
-      <form id="join">
-        <label for="name">닉네임을 입력해주세요</label>
-        <input id="name" required maxlength="24" autocomplete="off">
-        <button class="primary">open</button>
-      </form>
-    </section>
+  <h1 class="entry-title"><span class="entry-year">26</span>Sponge Pop</h1>
+
+  <div class="entry-chat">
+    <article class="line entry-line">
+      <img class="avatar" src="images/artist-profile.jpg" alt="">
+      <div class="stack">
+        <div class="meta">
+          <span>묵폰지</span>
+          <span class="verified" aria-hidden="true">✓</span>
+        </div>
+        <div class="bubble">안녕하세요 스폰지입니다</div>
+      </div>
+    </article>
+  </div>
+
+  <form id="join" class="entry-composer">
+    <label for="name">답장으로 닉네임을 입력해 주세요</label>
+    <div class="composer-field">
+      <input id="name" required maxlength="24" autocomplete="off" placeholder="닉네임 입력">
+      <button class="primary" aria-label="답장 보내기">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+      </button>
+    </div>
+  </form>
+</section>
 
     <div id="app" hidden>
       <header>

@@ -735,5 +735,133 @@ dialog.sheet.is-dragging {
    .quick button, .panel-back, .latest-fab, #app .photo, #app .result { transition: none; }
  }
 
- 
+ /* 입장 화면 */
+.entry {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.entry-title {
+  margin: 0;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 14px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 750;
+  letter-spacing: .02em;
+  color: #232735;
+  border-bottom: 1px solid #b7bed6;
+}
+
+.entry-year {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  background: #525e89;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  vertical-align: 1px;
+}
+
+.entry-chat {
+  flex: 1;
+  padding: 28px 19px 0;
+}
+
+.entry .avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.entry-composer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: #f5f6fc;
+  border-top: 1px solid #dee2ef;
+}
+
+.entry-composer label {
+  margin: 0 4px 8px;
+  font-size: 12px;
+  color: #5a6280;
+}
+
+.composer-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 5px 5px 18px;
+  background: #fff;
+  border: 1px solid #dde2ef;
+  border-radius: 26px;
+  transition: border-color .18s ease-out, box-shadow .18s ease-out;
+}
+
+.composer-field:focus-within {
+  border-color: #525e89;
+  box-shadow: 0 0 0 3px rgb(82 94 137 / 18%);
+}
+
+.composer-field input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  margin: 0;
+  padding: 10px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 16px; /* iOS 확대 방지 */
+}
+
+.composer-field input:focus-visible {
+  outline: none;
+}
+
+.composer-field .primary {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  background: #525e89;
+  color: #fff;
+  transition: opacity .18s ease-out, transform .16s ease-out;
+}
+
+.composer-field .primary svg {
+  width: 20px;
+  height: 20px;
+}
+
+.composer-field .primary:active {
+  transform: scale(.93);
+}
+
+/* 입력 전에는 전송 버튼을 흐리게 */
+.composer-field:has(input:placeholder-shown) .primary {
+  opacity: .45;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .entry-line {
+    animation: entry-in .5s .15s ease-out both;
+  }
+  .entry-composer {
+    animation: entry-in .5s .45s ease-out both;
+  }
+  @keyframes entry-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+}
 
