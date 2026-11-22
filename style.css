@@ -899,7 +899,7 @@ dialog.guide {
 }
 .guide-body { padding: 24px 22px 20px; }
 .guide-body h2 { margin: 0 0 4px; font-size: 19px; font-weight: 750; }
-.guide-lead { margin: 0 0 16px; font-size: 13px; color: #5a6280; }
+.guide-lead { margin: 0 0 16px; font-size: 10px; color: #5a6280; }
 .guide-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; }
 .guide-list li {
   display: flex;
