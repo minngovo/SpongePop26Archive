@@ -864,4 +864,74 @@ dialog.sheet.is-dragging {
     to   { opacity: 1; transform: none; }
   }
 }
+/* 1) 말풍선 크기 축소 (글자 크기는 그대로) */
+.stack { max-width: 78%; }
+#chat .bubble,
+.entry .bubble {
+  padding: 7px 11px;
+  border-radius: 17px;
+  line-height: 1.35;
+}
+#chat .bubble.reply-bubble {
+  padding: 9px 12px;
+  border-radius: 17px;
+}
+.reply-body { margin-top: 5px; }
+
+/* 2) 아티스트 프로필 사진 중앙 정렬 */
+:root { --avatar-focus: 50% 50%; } /* 얼굴 위치 조절: 예) 50% 30% */
+img.avatar,
+.sheet-avatar img {
+  display: block;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: var(--avatar-focus);
+}
+
+/* 3) 입장 안내 팝업 */
+dialog.guide {
+  width: min(92vw, 420px);
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  border-radius: 22px;
+  background: #f7f8fc;
+  color: #191c24;
+}
+.guide-body { padding: 24px 22px 20px; }
+.guide-body h2 { margin: 0 0 4px; font-size: 19px; font-weight: 750; }
+.guide-lead { margin: 0 0 16px; font-size: 13px; color: #5a6280; }
+.guide-list { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; }
+.guide-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  background: #fff;
+  border-radius: 14px;
+}
+.guide-ic {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e6eaf7;
+  color: #3d476b;
+  font-size: 17px;
+}
+.guide-ic svg { width: 19px; height: 19px; }
+.guide-list strong { display: block; font-size: 14px; }
+.guide-desc { font-size: 12.5px; line-height: 1.4; color: #5a6280; }
+.guide-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.guide-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #3d476b; cursor: pointer; }
+.guide-check input {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: #525e89;
+}
+.guide-actions .primary { padding: 10px 22px; border-radius: 99px; background: #525e89; }
 

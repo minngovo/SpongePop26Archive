@@ -128,6 +128,7 @@ function start(value){
   app.hidden=false;
   render();
   goLatest();
+  showGuide();
 }
 $('#join').onsubmit = async (e) => {
   e.preventDefault();
@@ -157,6 +158,21 @@ $('#join').onsubmit = async (e) => {
 nameField.oninput = () => nameField.setCustomValidity('');
 
 const menu=$('#menu');
+// 첫 입장 안내 팝업
+const guide=$('#guide'), guideKey='sponge-pop-guide-hidden:'+location.pathname;
+let guideShown=false; // 애칭 변경으로 재입장해도 한 번만 표시
+function showGuide(){
+  if(guideShown)return;
+  guideShown=true;
+  try{if(localStorage.getItem(guideKey)==='1')return;}catch{}
+  $('#guide-hide').checked=false;
+  guide.showModal();
+}
+// 확인 버튼, 바깥 클릭, Esc 어느 쪽으로 닫아도 체크 상태 저장
+guide.addEventListener('close',()=>{
+  try{if($('#guide-hide').checked)localStorage.setItem(guideKey,'1');}catch{}
+});
+guide.onclick=e=>{if(e.target===guide)guide.close();};
 function go(date){tab('chat');const target=date&&document.getElementById('day-'+date);if(target){document.documentElement.style.setProperty('--offset',($('header').offsetHeight+12)+'px');target.focus({preventScroll:true});target.scrollIntoView({block:'start'});}}
 function goLatest(){tab('chat');window.scrollTo(0,document.documentElement.scrollHeight);}
 function panelTop(){
