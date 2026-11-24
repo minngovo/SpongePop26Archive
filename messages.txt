@@ -524,7 +524,7 @@
 {"date":"2026-07-18","time":"19:48","from":"artist","text":"그렇게 됐습니다..","replyTo":"폰지 님 레드레드 췄어요? ㄷㄷ 영크크"},
 {"date":"2026-07-18","time":"19:48","from":"artist","text":"ㅋㅋ","replyTo":"외모순위 1위 너무 자주해서 감흥도 없어진 외모순위 1위를 뵙습니다"},
 {"date":"2026-07-18","time":"19:48","from":"artist","text":"저녁맛있게 드세여~"},
-{"date":"2026-07-19","time":"18:42","from":"artist","text":"img_4666"},
+{"date":"2026-07-19","time":"18:42","from":"artist","image":"images/IMG_4666.jpg"},
 {"date":"2026-07-19","time":"18:42","from":"artist","text":"대근이랑 닭한마리"},
 {"date":"2026-07-19","time":"18:43","from":"artist","text":"칼국수까지 추가예정"},
 {"date":"2026-07-19","time":"18:43","from":"artist","text":"개묵직"},
